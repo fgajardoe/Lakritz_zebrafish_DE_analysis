@@ -1,0 +1,128 @@
+---
+title: "Removing batch effect filtering by variance and running ComBat"
+author: "Felipe Gajardo"
+date: "5/12/17 / Edited: 25/3/20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Abundance filtering
+
+```{r}
+
+library(limma)
+library(sva)
+
+# expresion data
+d=read.table("004_original_marray_annotated_sample_log2.csv",sep=',',h=T)
+
+# initial number of probes
+dim(d)
+
+# Normalization. (skipped since data is already normalised)
+#d=normalizeBetweenArrays(d,method="scale")
+
+#Filtering by total abundance
+d.sum=apply(d,1,sum)
+#hist(d.sum,breaks=100, col="#2b83ba")
+#summary(d.sum)
+d=d[names(which(d.sum>16.26)),] #abundance above lower quartile
+#d.sum.after=apply(d,1,sum)
+#hist(d.sum.after,breaks=100,col="#2b83ba")
+
+# How many probes are kept?
+dim(d)
+```
+
+# Removing batch with ComBat
+
+First we set models for batch correction.
+
+```{r}
+#setting models. We called conditions as c("A_wt","B_mut") for obtaining the inverse sign in fold change values.
+phenotypes <- data.frame(sample_name = colnames(d), treatment = rep(c("A_wt","B_mut"), 3), extraction_day = rep(c(1:3), each = 2))
+phenotypes
+
+mod=model.matrix(~as.factor(treatment),data=phenotypes)
+mod0=model.matrix(~1,data=phenotypes)
+
+#run combat
+d.combat=ComBat(dat=as.matrix(d),batch=phenotypes$extraction_day,mod=mod0)
+
+#these are pval and qval returned by of combat (not DE)
+combat.pval= f.pvalue(as.matrix(d.combat),mod,mod0)
+combat.qval=p.adjust(combat.pval,method="BH")
+```
+
+**This is how filtered original data looks like before batch correction**
+
+```{r}
+#before combat
+plotMDS(d)
+
+plotDensities(d)
+
+```
+
+
+**This is how it looks like after batch correction**
+
+
+```{r}
+#after combat
+plotMDS(d.combat)
+
+plotDensities(d.combat)
+```
+
+
+
+# Differential expression analysis
+
+We used `limma` package for microarray differential expression analysis. `limma` was provided with the model obtained for batch corrected data with `combat`
+
+```{r}
+# load batch corrected data in limma 
+fit=lmFit(d.combat, mod)
+fit=eBayes(fit)
+de=topTable(fit,coef="as.factor(treatment)B_mut",number=length(rownames(d.combat)))
+
+head(de)
+
+```
+
+And DE analysis is done. Now we get some stats related to number of DE genes, Adj. p-value, etc.
+
+
+# Getting stats
+
+Adj. P-value threashold considered for counting DE probes was `0.05`.
+
+```{r}
+#threasold adj. pval
+threshold=0.05
+
+#Plot Adjusted P-values
+hist(de$adj.P.Val,breaks=100,col="#fdae61")
+summary(de$adj.P.Val)
+
+#N Adj. P-value below threshold
+n.sig=length(which(de$adj.P.Val < threshold))
+length(which(de$adj.P.Val < threshold))
+
+#write all(after filtering) probes to a file
+write.table(de,file="all.tsv",sep='\t',quote=F)
+
+#write significant probes to a file
+out=de[de$adj.P.Val < threshold,]
+write.table(out,file="significant.tsv",sep='\t',quote=F)
+```
+
+Finally save session
+
+```{r}
+#just for saving the workspace
+save.image(".RData")
+```
