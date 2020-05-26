@@ -11,4 +11,4 @@ This directory contains data and scripts used in the differential expression ana
 
 ## Cite
 
-+ Giuseppina Covello, Fernando J. Rossello, Michele Filosi, Felipe Gajardo, Anne-Laure Duchemin, Beatrice F. Tremonti, Michael Eichenlaub, Jose M. Polo, David Powell, John Ngai, Miguel L. Allende, Enrico Domenici, Mirana Ramialison and Lucia Poggi (2020) **Transcriptome analysis of the zebrafish atoh7-/- mutant, lakritz, highlights Atoh7-dependent genetic networks with potential implications for human eye diseases**. _Accepted at FASEB BioAdvances._
++ Giuseppina Covello, Fernando J. Rossello, Michele Filosi, Felipe Gajardo, Anne-Laure Duchemin, Beatrice F. Tremonti, Michael Eichenlaub, Jose M. Polo, David Powell, John Ngai, Miguel L. Allende, Enrico Domenici, Mirana Ramialison and Lucia Poggi (2020) **Transcriptome analysis of the zebrafish atoh7-/- mutant, lakritz, highlights Atoh7-dependent genetic networks with potential implications for human eye diseases**. _BioRxiv._ https://www.biorxiv.org/content/10.1101/2020.04.09.033704v1
